@@ -55,42 +55,32 @@ def pretty_echo(event):
 
         if test_res.ok:
             print(test_res.text)
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text = "感謝您的加入,請先完成檢測再做查詢")
+            )
+        
     elif(event.message.text == "查詢"):
         imageURL = "https://tokien40.com/image/upload/"+parse.quote(name.encode('utf-8'))+".png"
         print(name+"查詢")
-        message = [
-            ImageSendMessage(
-                original_content_url = imageURL,
-                preview_image_url = imageURL
-            ),
-            TextSendMessage(text = "感謝您查詢,這是您的證書")
-        ]
 
+        r = requests.head(imageURL)
+
+        if(r.status_code == requests.codes.ok):
+            message = [
+                ImageSendMessage(
+                    original_content_url = imageURL,
+                    preview_image_url = imageURL
+                ),
+                TextSendMessage(text = "感謝您查詢,這是您的證書")
+            ]
+        else:
+            message = [TextSendMessage(text = "尚無證書,請等待key in完成")]
+            
         line_bot_api.reply_message(
             event.reply_token,
             message
         )
-
-def Csv(event):
-    url = 'http://individual-sports.info/SportData/Circularity%20Sports/Field%2003/TrainingData_2022_11.csv'
-
-    data = pd.read_csv(url)
-    name = data['學員名稱'].tolist()
-    totle = data['總完成度'].tolist()
-
-    index = 0
-    for s1 in name:
-        if(s1 == "林詩培"):
-            index = name.index(s1)
-
-    pretty_text = ""
-    pretty_text += "姓名:" + name[index]
-    pretty_text += "\n總完成度:" + str(totle[index])
-
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text = pretty_text)
-    )
 
 if __name__ == "__main__":
     app.run()
